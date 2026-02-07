@@ -1,10 +1,10 @@
 // ================================
-// Medieval Routes – FULL game.js (STABLE)
+// Medieval Routes – FULL game.js (FIXED v2)
 // Fixes:
-// - Cart follows ONE path consistently
-// - Junction can only be changed INSIDE node
-// - Slowdown ONLY inside junction
-// - No snapping / no vertical-then-diagonal
+// - Cart moves from START → barn (correct direction)
+// - Junction IS clickable when cart reaches it
+// - Path locks ONLY AFTER leaving junction
+// - No early lock, no dead junction
 // ================================
 
 const cart = document.getElementById("cart");
@@ -17,8 +17,9 @@ const message = document.getElementById("message");
 // ---------- GAME STATE ----------
 let junctionState = 0;        // 0 = roadA, 1 = roadB
 let running = true;
-let junctionActive = true;
-let pathLocked = false;      // CRITICAL: lock path after junction
+let junctionActive = false;
+let pathLocked = false;
+let hasEnteredJunction = false; // KEY FIX
 
 // ---------- SPEED (pixels per frame) ----------
 const NORMAL_SPEED = 1.8;
@@ -31,7 +32,7 @@ const JUNCTION_Y_MAX = 380;
 // ---------- PATH ----------
 let activePath = roadA;
 let pathLength = activePath.getTotalLength();
-let progress = pathLength;   // start at bottom of path
+let progress = 0; // START at beginning of path (bottom)
 
 // ---------- INPUT ----------
 junction.addEventListener("click", toggleJunction);
@@ -54,11 +55,18 @@ function getSpeed(y) {
 }
 
 function updateJunctionState(y) {
-  junctionActive = y > JUNCTION_Y_MIN && y < JUNCTION_Y_MAX;
-  junction.style.opacity = junctionActive ? "1" : "0.35";
+  // Detect entering junction
+  if (y > JUNCTION_Y_MIN && y < JUNCTION_Y_MAX) {
+    junctionActive = true;
+    hasEnteredJunction = true;
+    junction.style.opacity = "1";
+  } else {
+    junctionActive = false;
+    junction.style.opacity = "0.35";
+  }
 
-  // Once we EXIT the junction, lock the path permanently
-  if (!junctionActive && y < JUNCTION_Y_MIN && !pathLocked) {
+  // Lock path ONLY after exiting junction once
+  if (hasEnteredJunction && y < JUNCTION_Y_MIN && !pathLocked) {
     pathLocked = true;
     activePath = junctionState === 0 ? roadA : roadB;
     pathLength = activePath.getTotalLength();
@@ -78,9 +86,9 @@ function animate() {
 
   updateJunctionState(point.y);
 
-  progress -= getSpeed(point.y);
+  progress += getSpeed(point.y);
 
-  if (progress <= 0) {
+  if (progress >= pathLength) {
     endGame(junctionState === 0);
     return;
   }
