@@ -1,10 +1,10 @@
 // ================================
-// Medieval Routes – FULL game.js (FIXED v2)
-// Fixes:
-// - Cart moves from START → barn (correct direction)
-// - Junction IS clickable when cart reaches it
-// - Path locks ONLY AFTER leaving junction
-// - No early lock, no dead junction
+// Medieval Routes – FULL game.js (FREE SWITCH MODE)
+// Design choice:
+// - Junction can be switched AT ANY TIME
+// - Cart always follows CURRENTLY selected path
+// - No locking, no decision window
+// - Pure real-time routing (intentional design)
 // ================================
 
 const cart = document.getElementById("cart");
@@ -15,31 +15,25 @@ const overlay = document.getElementById("overlay");
 const message = document.getElementById("message");
 
 // ---------- GAME STATE ----------
-let junctionState = 0;        // 0 = roadA, 1 = roadB
+let junctionState = 0;   // 0 = roadA, 1 = roadB
 let running = true;
-let junctionActive = false;
-let pathLocked = false;
-let hasEnteredJunction = false; // KEY FIX
 
-// ---------- SPEED (pixels per frame) ----------
+// ---------- SPEED ----------
 const NORMAL_SPEED = 1.8;
-const SLOW_SPEED = 0.6;
+const SLOW_SPEED = 0.8;
 
-// Junction Y zone (SVG coordinates)
+// Junction Y zone (visual slowdown only)
 const JUNCTION_Y_MIN = 340;
 const JUNCTION_Y_MAX = 380;
 
 // ---------- PATH ----------
-let activePath = roadA;
-let pathLength = activePath.getTotalLength();
-let progress = 0; // START at beginning of path (bottom)
+let progress = 0;
 
 // ---------- INPUT ----------
 junction.addEventListener("click", toggleJunction);
 junction.addEventListener("touchstart", toggleJunction, { passive: false });
 
 function toggleJunction(e) {
-  if (!junctionActive || pathLocked) return;
   e.preventDefault();
 
   junctionState = 1 - junctionState;
@@ -48,34 +42,25 @@ function toggleJunction(e) {
 }
 
 // ---------- HELPERS ----------
+function getActiveRoad() {
+  return junctionState === 0 ? roadA : roadB;
+}
+
 function getSpeed(y) {
   return y > JUNCTION_Y_MIN && y < JUNCTION_Y_MAX
     ? SLOW_SPEED
     : NORMAL_SPEED;
 }
 
-function updateJunctionState(y) {
-  // Detect entering junction
-  if (y > JUNCTION_Y_MIN && y < JUNCTION_Y_MAX) {
-    junctionActive = true;
-    hasEnteredJunction = true;
-    junction.style.opacity = "1";
-  } else {
-    junctionActive = false;
-    junction.style.opacity = "0.35";
-  }
-
-  // Lock path ONLY after exiting junction once
-  if (hasEnteredJunction && y < JUNCTION_Y_MIN && !pathLocked) {
-    pathLocked = true;
-    activePath = junctionState === 0 ? roadA : roadB;
-    pathLength = activePath.getTotalLength();
-  }
-}
-
 // ---------- MAIN LOOP ----------
 function animate() {
   if (!running) return;
+
+  const activePath = getActiveRoad();
+  const pathLength = activePath.getTotalLength();
+
+  // Clamp progress if path length changes
+  if (progress > pathLength) progress = pathLength;
 
   const point = activePath.getPointAtLength(progress);
 
@@ -83,8 +68,6 @@ function animate() {
     "transform",
     `translate(${point.x}, ${point.y})`
   );
-
-  updateJunctionState(point.y);
 
   progress += getSpeed(point.y);
 
