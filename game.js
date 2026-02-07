@@ -1,46 +1,106 @@
-// ================================ // Medieval Routes – FULL game.js (FIXED) // Cart starts correctly, moves immediately, // follows diagonal paths, junction works // ================================
+// ================================
+// Medieval Routes – FULL game.js (STABLE)
+// Fixes:
+// - Cart follows ONE path consistently
+// - Junction can only be changed INSIDE node
+// - Slowdown ONLY inside junction
+// - No snapping / no vertical-then-diagonal
+// ================================
 
-const cart = document.getElementById("cart"); const junction = document.getElementById("junction"); const roadA = document.getElementById("roadA"); const roadB = document.getElementById("roadB"); const overlay = document.getElementById("overlay"); const message = document.getElementById("message");
+const cart = document.getElementById("cart");
+const junction = document.getElementById("junction");
+const roadA = document.getElementById("roadA");
+const roadB = document.getElementById("roadB");
+const overlay = document.getElementById("overlay");
+const message = document.getElementById("message");
 
-// ---------- GAME STATE ---------- let junctionState = 0; // 0 = left road, 1 = right road let running = true; let junctionActive = true;
+// ---------- GAME STATE ----------
+let junctionState = 0;        // 0 = roadA, 1 = roadB
+let running = true;
+let junctionActive = true;
+let pathLocked = false;      // CRITICAL: lock path after junction
 
-// ---------- SPEED ---------- const NORMAL_SPEED = 1.6;   // pixels per frame const SLOW_SPEED = 0.6;
+// ---------- SPEED (pixels per frame) ----------
+const NORMAL_SPEED = 1.8;
+const SLOW_SPEED = 0.6;
 
-// Junction Y zone (SVG coords) const JUNCTION_Y_MIN = 340; const JUNCTION_Y_MAX = 380;
+// Junction Y zone (SVG coordinates)
+const JUNCTION_Y_MIN = 340;
+const JUNCTION_Y_MAX = 380;
 
-// ---------- PATH PROGRESS ---------- // We move FROM bottom → top, so we start at full length let activePath = roadA; let pathLength = activePath.getTotalLength(); let progress = pathLength;
+// ---------- PATH ----------
+let activePath = roadA;
+let pathLength = activePath.getTotalLength();
+let progress = pathLength;   // start at bottom of path
 
-// ---------- INPUT ---------- junction.addEventListener("click", toggleJunction); junction.addEventListener("touchstart", toggleJunction, { passive: false });
+// ---------- INPUT ----------
+junction.addEventListener("click", toggleJunction);
+junction.addEventListener("touchstart", toggleJunction, { passive: false });
 
-function toggleJunction(e) { if (!junctionActive) return; e.preventDefault();
+function toggleJunction(e) {
+  if (!junctionActive || pathLocked) return;
+  e.preventDefault();
 
-junctionState = 1 - junctionState; roadA.classList.toggle("active", junctionState === 0); roadB.classList.toggle("active", junctionState === 1); }
+  junctionState = 1 - junctionState;
+  roadA.classList.toggle("active", junctionState === 0);
+  roadB.classList.toggle("active", junctionState === 1);
+}
 
-// ---------- HELPERS ---------- function getActiveRoad() { return junctionState === 0 ? roadA : roadB; }
+// ---------- HELPERS ----------
+function getSpeed(y) {
+  return y > JUNCTION_Y_MIN && y < JUNCTION_Y_MAX
+    ? SLOW_SPEED
+    : NORMAL_SPEED;
+}
 
-function getSpeed(y) { return y > JUNCTION_Y_MIN && y < JUNCTION_Y_MAX ? SLOW_SPEED : NORMAL_SPEED; }
+function updateJunctionState(y) {
+  junctionActive = y > JUNCTION_Y_MIN && y < JUNCTION_Y_MAX;
+  junction.style.opacity = junctionActive ? "1" : "0.35";
 
-function updateJunctionAvailability(y) { junctionActive = y > JUNCTION_Y_MIN && y < JUNCTION_Y_MAX; junction.style.opacity = junctionActive ? "1" : "0.35"; }
+  // Once we EXIT the junction, lock the path permanently
+  if (!junctionActive && y < JUNCTION_Y_MIN && !pathLocked) {
+    pathLocked = true;
+    activePath = junctionState === 0 ? roadA : roadB;
+    pathLength = activePath.getTotalLength();
+  }
+}
 
-// ---------- MAIN LOOP ---------- function animate() { if (!running) return;
+// ---------- MAIN LOOP ----------
+function animate() {
+  if (!running) return;
 
-activePath = getActiveRoad(); pathLength = activePath.getTotalLength();
+  const point = activePath.getPointAtLength(progress);
 
-const point = activePath.getPointAtLength(progress);
+  cart.setAttribute(
+    "transform",
+    `translate(${point.x}, ${point.y})`
+  );
 
-// Move cart cart.setAttribute( "transform", translate(${point.x}, ${point.y}) );
+  updateJunctionState(point.y);
 
-updateJunctionAvailability(point.y);
+  progress -= getSpeed(point.y);
 
-// Advance movement (reverse direction) progress -= getSpeed(point.y);
+  if (progress <= 0) {
+    endGame(junctionState === 0);
+    return;
+  }
 
-// End condition if (progress <= 0) { endGame(junctionState === 0); return; }
+  requestAnimationFrame(animate);
+}
 
-requestAnimationFrame(animate); }
+// ---------- END GAME ----------
+function endGame(success) {
+  running = false;
+  overlay.classList.remove("hidden");
+  message.textContent = success
+    ? "Correct delivery 🌾"
+    : "Wrong path ❌";
+}
 
-// ---------- END GAME ---------- function endGame(success) { running = false; overlay.classList.remove("hidden"); message.textContent = success ? "Correct delivery 🌾" : "Wrong path ❌"; }
+// ---------- RESTART ----------
+function restart() {
+  location.reload();
+}
 
-// ---------- RESTART ---------- function restart() { location.reload(); }
-
-// ---------- START ---------- 
+// ---------- START ----------
 animate();
