@@ -1,46 +1,29 @@
-// ================================ // Medieval Routes – FULL game.js (NODE-SYNC FIX) // FIXES: // - Node position is READ from SVG (no hardcoded coords) // - Train switches ONLY when physically inside the green node // - Diagonal paths no longer bug out // ================================
+// ================================ // Medieval Routes – FULL game.js (BASELINE FIX) // GOAL OF THIS VERSION: // - Cart ALWAYS moves (no node logic yet) // - Follows ONE path cleanly from start to end // - This is a STABLE BASELINE to build from // ================================
 
 const cart = document.getElementById("cart"); const junction = document.getElementById("junction"); const roadA = document.getElementById("roadA"); const roadB = document.getElementById("roadB"); const overlay = document.getElementById("overlay"); const message = document.getElementById("message");
 
-// ---------- GAME STATE ---------- let junctionState = 0;     // player choice let effectiveState = 0;   // applied to cart let running = true;
+// ---------- GAME STATE ---------- let running = true;
 
-// ---------- SPEED ---------- const NORMAL_SPEED = 1.8; const SLOW_SPEED = 0.8;
+// ---------- SPEED ---------- const SPEED = 1.6; // pixels per frame
 
-// ---------- READ NODE GEOMETRY FROM SVG ---------- // THIS is what was breaking everything before const NODE_X = parseFloat(junction.getAttribute("cx")); const NODE_Y = parseFloat(junction.getAttribute("cy")); const NODE_RADIUS = parseFloat(junction.getAttribute("r")); const SWITCH_RADIUS = NODE_RADIUS; // logical = visual
-
-// ---------- PATH ---------- let progress = 0; let activePath = roadA;
-
-// ---------- INPUT ---------- junction.addEventListener("click", toggleJunction); junction.addEventListener("touchstart", toggleJunction, { passive: false });
-
-function toggleJunction(e) { e.preventDefault();
-
-junctionState = 1 - junctionState; roadA.classList.toggle("active", junctionState === 0); roadB.classList.toggle("active", junctionState === 1); }
-
-// ---------- HELPERS ---------- function isInsideNode(x, y) { return Math.hypot(x - NODE_X, y - NODE_Y) <= SWITCH_RADIUS; }
-
-function getSpeed(insideNode) { return insideNode ? SLOW_SPEED : NORMAL_SPEED; }
+// ---------- PATH ---------- // IMPORTANT: SVG paths go FROM BOTTOM → TOP let activePath = roadA; let pathLength = activePath.getTotalLength(); let progress = 0; // START AT BEGINNING
 
 // ---------- MAIN LOOP ---------- function animate() { if (!running) return;
 
-const pathLength = activePath.getTotalLength(); if (progress > pathLength) progress = pathLength;
+// Safety: recalc length once pathLength = activePath.getTotalLength();
 
-const point = activePath.getPointAtLength(progress);
+// Get current point const point = activePath.getPointAtLength(progress);
 
-const insideNode = isInsideNode(point.x, point.y);
+// Move cart cart.setAttribute( "transform", translate(${point.x}, ${point.y}) );
 
-// Switch ONLY when inside the node if (insideNode) { effectiveState = junctionState; activePath = effectiveState === 0 ? roadA : roadB; }
+// Advance progress += SPEED;
 
-cart.setAttribute( "transform", translate(${point.x}, ${point.y}) );
-
-progress += getSpeed(insideNode);
-
-if (progress >= pathLength) { endGame(effectiveState === 0); return; }
+// End if (progress >= pathLength) { endGame(true); return; }
 
 requestAnimationFrame(animate); }
 
-// ---------- END GAME ---------- function endGame(success) { running = false; overlay.classList.remove("hidden"); message.textContent = success ? "Correct delivery 🌾" : "Wrong path ❌"; }
+// ---------- END GAME ---------- function endGame(success) { running = false; overlay.classList.remove("hidden"); message.textContent = success ? "Reached destination" : "Failed"; }
 
 // ---------- RESTART ---------- function restart() { location.reload(); }
 
-// ---------- START ---------- 
-animate();
+// ---------- START ---------- animate();
