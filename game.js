@@ -1,9 +1,10 @@
 // ================================
-// Medieval Routes – FULL game.js (BASELINE FIX)
-// GOAL OF THIS VERSION:
-// - Cart ALWAYS moves (no node logic yet)
-// - Follows ONE path cleanly from start to end
-// - This is a STABLE BASELINE to build from
+// Medieval Routes â€“ FULL game.js (FREE SWITCH MODE)
+// Design choice:
+// - Junction can be switched AT ANY TIME
+// - Cart always follows CURRENTLY selected path
+// - No locking, no decision window
+// - Pure real-time routing (intentional design)
 // ================================
 
 const cart = document.getElementById("cart");
@@ -14,57 +15,82 @@ const overlay = document.getElementById("overlay");
 const message = document.getElementById("message");
 
 // ---------- GAME STATE ----------
+let junctionState = 0;   // 0 = roadA, 1 = roadB
 let running = true;
 
 // ---------- SPEED ----------
-const SPEED = 1.6; // pixels per frame
+const NORMAL_SPEED = 1.8;
+const SLOW_SPEED = 0.8;
+
+// Junction Y zone (visual slowdown only)
+const JUNCTION_Y_MIN = 340;
+const JUNCTION_Y_MAX = 380;
 
 // ---------- PATH ----------
-// IMPORTANT: SVG paths go FROM BOTTOM → TOP
-let activePath = roadA;
-let pathLength = activePath.getTotalLength();
-let progress = 0; // START AT BEGINNING
+let progress = 0;
+
+// ---------- INPUT ----------
+junction.addEventListener("click", toggleJunction);
+junction.addEventListener("touchstart", toggleJunction, { passive: false });
+
+function toggleJunction(e) {
+  e.preventDefault();
+
+  junctionState = 1 - junctionState;
+  roadA.classList.toggle("active", junctionState === 0);
+  roadB.classList.toggle("active", junctionState === 1);
+}
+
+// ---------- HELPERS ----------
+function getActiveRoad() {
+  return junctionState === 0 ? roadA : roadB;
+}
+
+function getSpeed(y) {
+  return y > JUNCTION_Y_MIN && y < JUNCTION_Y_MAX
+    ? SLOW_SPEED
+    : NORMAL_SPEED;
+}
 
 // ---------- MAIN LOOP ----------
 function animate() {
-if (!running) return;
+  if (!running) return;
 
-// Safety: recalc length once
-pathLength = activePath.getTotalLength();
+  const activePath = getActiveRoad();
+  const pathLength = activePath.getTotalLength();
 
-// Get current point
-const point = activePath.getPointAtLength(progress);
+  // Clamp progress if path length changes
+  if (progress > pathLength) progress = pathLength;
 
-// Move cart
-cart.setAttribute(
-"transform",
-translate(${point.x}, ${point.y})
-);
+  const point = activePath.getPointAtLength(progress);
 
-// Advance
-progress += SPEED;
+  cart.setAttribute(
+    "transform",
+    `translate(${point.x}, ${point.y})`
+  );
 
-// End
-if (progress >= pathLength) {
-endGame(true);
-return;
-}
+  progress += getSpeed(point.y);
 
-requestAnimationFrame(animate);
+  if (progress >= pathLength) {
+    endGame(junctionState === 0);
+    return;
+  }
+
+  requestAnimationFrame(animate);
 }
 
 // ---------- END GAME ----------
 function endGame(success) {
-running = false;
-overlay.classList.remove("hidden");
-message.textContent = success
-? "Reached destination"
-: "Failed";
+  running = false;
+  overlay.classList.remove("hidden");
+  message.textContent = success
+    ? "Correct delivery ðŸŒ¾"
+    : "Wrong path âŒ";
 }
 
 // ---------- RESTART ----------
 function restart() {
-location.reload();
+  location.reload();
 }
 
 // ---------- START ----------
