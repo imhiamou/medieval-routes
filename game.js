@@ -84,8 +84,8 @@ function endGame(success) {
   running = false;
   overlay.classList.remove("hidden");
   message.textContent = success
-    ? "Correct delivery ðŸŒ¾"
-    : "Wrong path âŒ";
+    ? "Correct delivery 🍍"
+    : "Wrong path 😞";
 }
 
 // ---------- RESTART ----------
