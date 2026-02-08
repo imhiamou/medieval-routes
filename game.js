@@ -40,4 +40,5 @@ requestAnimationFrame(animate); }
 
 // ---------- RESTART ---------- function restart() { location.reload(); }
 
-// ---------- START ---------- animate();
+// ---------- START ---------- //
+animate();
