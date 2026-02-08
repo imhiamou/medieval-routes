@@ -1,97 +1,49 @@
-// ================================
-// Medieval Routes – FULL game.js (FREE SWITCH MODE)
-// Design choice:
-// - Junction can be switched AT ANY TIME
-// - Cart always follows CURRENTLY selected path
-// - No locking, no decision window
-// - Pure real-time routing (intentional design)
-// ================================
+// ================================ // Medieval Routes – FULL game.js (NODE-CENTERED SWITCH) // Final mental model: // - The GREEN NODE is the ONLY place where switching matters // - Train can be switched ONLY while physically INSIDE the node // - Diagonal paths are NEVER globally affected // - Player can click anytime, but effect is LOCAL to node // ================================
 
-const cart = document.getElementById("cart");
-const junction = document.getElementById("junction");
-const roadA = document.getElementById("roadA");
-const roadB = document.getElementById("roadB");
-const overlay = document.getElementById("overlay");
-const message = document.getElementById("message");
+const cart = document.getElementById("cart"); const junction = document.getElementById("junction"); const roadA = document.getElementById("roadA"); const roadB = document.getElementById("roadB"); const overlay = document.getElementById("overlay"); const message = document.getElementById("message");
 
-// ---------- GAME STATE ----------
-let junctionState = 0;   // 0 = roadA, 1 = roadB
-let running = true;
+// ---------- GAME STATE ---------- let junctionState = 0;   // what the player selects let effectiveState = 0;  // what the train actually follows let running = true;
 
-// ---------- SPEED ----------
-const NORMAL_SPEED = 1.8;
-const SLOW_SPEED = 0.8;
+// ---------- SPEED ---------- const NORMAL_SPEED = 1.8; const SLOW_SPEED = 0.8;
 
-// Junction Y zone (visual slowdown only)
-const JUNCTION_Y_MIN = 340;
-const JUNCTION_Y_MAX = 380;
+// ---------- NODE GEOMETRY (SOURCE OF TRUTH) ---------- // MUST match the SVG circle in index.html const NODE_X = 180; const NODE_Y = 360; const NODE_RADIUS = 22;       // visual radius const SWITCH_RADIUS = 22;     // logical radius (tight + intuitive)
 
-// ---------- PATH ----------
-let progress = 0;
+// ---------- PATH ---------- let progress = 0; let activePath = roadA;
 
-// ---------- INPUT ----------
-junction.addEventListener("click", toggleJunction);
-junction.addEventListener("touchstart", toggleJunction, { passive: false });
+// ---------- INPUT ---------- junction.addEventListener("click", toggleJunction); junction.addEventListener("touchstart", toggleJunction, { passive: false });
 
-function toggleJunction(e) {
-  e.preventDefault();
+function toggleJunction(e) { e.preventDefault();
 
-  junctionState = 1 - junctionState;
-  roadA.classList.toggle("active", junctionState === 0);
-  roadB.classList.toggle("active", junctionState === 1);
-}
+// Player intent always allowed junctionState = 1 - junctionState; roadA.classList.toggle("active", junctionState === 0); roadB.classList.toggle("active", junctionState === 1); }
 
-// ---------- HELPERS ----------
-function getActiveRoad() {
-  return junctionState === 0 ? roadA : roadB;
-}
+// ---------- HELPERS ---------- function distance(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
 
-function getSpeed(y) {
-  return y > JUNCTION_Y_MIN && y < JUNCTION_Y_MAX
-    ? SLOW_SPEED
-    : NORMAL_SPEED;
-}
+function isInsideNode(x, y) { return distance(x, y, NODE_X, NODE_Y) <= SWITCH_RADIUS; }
 
-// ---------- MAIN LOOP ----------
-function animate() {
-  if (!running) return;
+function getSpeed(isInNode) { return isInNode ? SLOW_SPEED : NORMAL_SPEED; }
 
-  const activePath = getActiveRoad();
-  const pathLength = activePath.getTotalLength();
+// ---------- MAIN LOOP ---------- function animate() { if (!running) return;
 
-  // Clamp progress if path length changes
-  if (progress > pathLength) progress = pathLength;
+const pathLength = activePath.getTotalLength();
 
-  const point = activePath.getPointAtLength(progress);
+if (progress > pathLength) progress = pathLength;
 
-  cart.setAttribute(
-    "transform",
-    `translate(${point.x}, ${point.y})`
-  );
+const point = activePath.getPointAtLength(progress);
 
-  progress += getSpeed(point.y);
+// --- NODE-CENTERED LOGIC --- const insideNode = isInsideNode(point.x, point.y);
 
-  if (progress >= pathLength) {
-    endGame(junctionState === 0);
-    return;
-  }
+// ONLY HERE can the path change if (insideNode) { effectiveState = junctionState; activePath = effectiveState === 0 ? roadA : roadB; }
 
-  requestAnimationFrame(animate);
-}
+cart.setAttribute( "transform", translate(${point.x}, ${point.y}) );
 
-// ---------- END GAME ----------
-function endGame(success) {
-  running = false;
-  overlay.classList.remove("hidden");
-  message.textContent = success
-    ? "Correct delivery 🌾"
-    : "Wrong path ❌";
-}
+progress += getSpeed(insideNode);
 
-// ---------- RESTART ----------
-function restart() {
-  location.reload();
-}
+if (progress >= pathLength) { endGame(effectiveState === 0); return; }
 
-// ---------- START ----------
-animate();
+requestAnimationFrame(animate); }
+
+// ---------- END GAME ---------- function endGame(success) { running = false; overlay.classList.remove("hidden"); message.textContent = success ? "Correct delivery 🌾" : "Wrong path ❌"; }
+
+// ---------- RESTART ---------- function restart() { location.reload(); }
+
+// ---------- START ---------- animate();
