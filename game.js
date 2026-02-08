@@ -1,12 +1,12 @@
-// ================================ // Medieval Routes – FULL game.js (NODE-CENTERED SWITCH) // Final mental model: // - The GREEN NODE is the ONLY place where switching matters // - Train can be switched ONLY while physically INSIDE the node // - Diagonal paths are NEVER globally affected // - Player can click anytime, but effect is LOCAL to node // ================================
+// ================================ // Medieval Routes – FULL game.js (NODE-SYNC FIX) // FIXES: // - Node position is READ from SVG (no hardcoded coords) // - Train switches ONLY when physically inside the green node // - Diagonal paths no longer bug out // ================================
 
 const cart = document.getElementById("cart"); const junction = document.getElementById("junction"); const roadA = document.getElementById("roadA"); const roadB = document.getElementById("roadB"); const overlay = document.getElementById("overlay"); const message = document.getElementById("message");
 
-// ---------- GAME STATE ---------- let junctionState = 0;   // what the player selects let effectiveState = 0;  // what the train actually follows let running = true;
+// ---------- GAME STATE ---------- let junctionState = 0;     // player choice let effectiveState = 0;   // applied to cart let running = true;
 
 // ---------- SPEED ---------- const NORMAL_SPEED = 1.8; const SLOW_SPEED = 0.8;
 
-// ---------- NODE GEOMETRY (SOURCE OF TRUTH) ---------- // MUST match the SVG circle in index.html const NODE_X = 180; const NODE_Y = 360; const NODE_RADIUS = 22;       // visual radius const SWITCH_RADIUS = 22;     // logical radius (tight + intuitive)
+// ---------- READ NODE GEOMETRY FROM SVG ---------- // THIS is what was breaking everything before const NODE_X = parseFloat(junction.getAttribute("cx")); const NODE_Y = parseFloat(junction.getAttribute("cy")); const NODE_RADIUS = parseFloat(junction.getAttribute("r")); const SWITCH_RADIUS = NODE_RADIUS; // logical = visual
 
 // ---------- PATH ---------- let progress = 0; let activePath = roadA;
 
@@ -14,25 +14,21 @@ const cart = document.getElementById("cart"); const junction = document.getEleme
 
 function toggleJunction(e) { e.preventDefault();
 
-// Player intent always allowed junctionState = 1 - junctionState; roadA.classList.toggle("active", junctionState === 0); roadB.classList.toggle("active", junctionState === 1); }
+junctionState = 1 - junctionState; roadA.classList.toggle("active", junctionState === 0); roadB.classList.toggle("active", junctionState === 1); }
 
-// ---------- HELPERS ---------- function distance(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
+// ---------- HELPERS ---------- function isInsideNode(x, y) { return Math.hypot(x - NODE_X, y - NODE_Y) <= SWITCH_RADIUS; }
 
-function isInsideNode(x, y) { return distance(x, y, NODE_X, NODE_Y) <= SWITCH_RADIUS; }
-
-function getSpeed(isInNode) { return isInNode ? SLOW_SPEED : NORMAL_SPEED; }
+function getSpeed(insideNode) { return insideNode ? SLOW_SPEED : NORMAL_SPEED; }
 
 // ---------- MAIN LOOP ---------- function animate() { if (!running) return;
 
-const pathLength = activePath.getTotalLength();
-
-if (progress > pathLength) progress = pathLength;
+const pathLength = activePath.getTotalLength(); if (progress > pathLength) progress = pathLength;
 
 const point = activePath.getPointAtLength(progress);
 
-// --- NODE-CENTERED LOGIC --- const insideNode = isInsideNode(point.x, point.y);
+const insideNode = isInsideNode(point.x, point.y);
 
-// ONLY HERE can the path change if (insideNode) { effectiveState = junctionState; activePath = effectiveState === 0 ? roadA : roadB; }
+// Switch ONLY when inside the node if (insideNode) { effectiveState = junctionState; activePath = effectiveState === 0 ? roadA : roadB; }
 
 cart.setAttribute( "transform", translate(${point.x}, ${point.y}) );
 
@@ -46,4 +42,5 @@ requestAnimationFrame(animate); }
 
 // ---------- RESTART ---------- function restart() { location.reload(); }
 
-// ---------- START ---------- animate();
+// ---------- START ---------- 
+animate();
