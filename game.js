@@ -9,7 +9,8 @@ let cart = {
   width: 40,
   height: 30,
   speed: 1.5,
-  direction: "right"
+  direction: "right",
+  hasChosenDirection: false
 };
 
 let intersection = {
@@ -29,7 +30,7 @@ function drawGrass() {
 function drawRoad() {
   ctx.fillStyle = "#9c8b6f";
 
-  // Horizontal road (always visible)
+  // Horizontal road
   ctx.fillRect(0, 275, canvas.width, 50);
 
   // Vertical road (always visible)
@@ -39,7 +40,7 @@ function drawRoad() {
   ctx.fillStyle = "#3c9a3c";
   ctx.fillRect(intersection.x, intersection.y, TILE, TILE);
 
-  // Draw path indicator inside intersection
+  // Path indicator
   ctx.strokeStyle = "white";
   ctx.lineWidth = 6;
   ctx.beginPath();
@@ -50,7 +51,7 @@ function drawRoad() {
     ctx.lineTo(intersection.x + 50, intersection.y + 50);
     ctx.lineTo(intersection.x + 50, intersection.y + 10);
   } else {
-    // straight indicator
+    // Straight indicator
     ctx.moveTo(intersection.x + 10, intersection.y + 50);
     ctx.lineTo(intersection.x + 90, intersection.y + 50);
   }
@@ -85,9 +86,12 @@ function updateCart() {
   if (cart.direction === "right") {
     cart.x += cart.speed;
 
-    // If inside and turn active → change direction
-    if (insideIntersection && intersection.turnUp) {
-      cart.direction = "up";
+    // ONLY decide direction while inside intersection
+    if (insideIntersection && !cart.hasChosenDirection) {
+      if (intersection.turnUp) {
+        cart.direction = "up";
+      }
+      cart.hasChosenDirection = true;
     }
 
     if (cart.x > 700) {
@@ -115,11 +119,13 @@ function restartGame() {
   cart.x = 50;
   cart.y = 300;
   cart.direction = "right";
+  cart.hasChosenDirection = false;
   intersection.turnUp = false;
   gameState = "playing";
   document.getElementById("ui").classList.add("hidden");
 }
 
+// 🔥 CLICK CAN HAPPEN ANYTIME NOW
 canvas.addEventListener("click", (e) => {
   if (gameState !== "playing") return;
 
@@ -133,13 +139,7 @@ canvas.addEventListener("click", (e) => {
     mouseY >= intersection.y &&
     mouseY <= intersection.y + TILE;
 
-  const cartInside =
-    cart.x + cart.width > intersection.x &&
-    cart.x < intersection.x + intersection.size &&
-    cart.y + cart.height > intersection.y &&
-    cart.y < intersection.y + intersection.size;
-
-  if (clickedIntersection && cartInside) {
+  if (clickedIntersection) {
     intersection.turnUp = !intersection.turnUp;
   }
 });
