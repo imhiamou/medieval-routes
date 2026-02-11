@@ -1,24 +1,47 @@
-body {
-  margin: 0;
-  background: #222;
+const cart = document.getElementById("cart");
+const junction = document.getElementById("junction");
+
+let progress = 0;
+let branch = 0;
+let running = true;
+
+const SPEED = 1.5;
+
+junction.addEventListener("click", () => {
+  branch = 1 - branch;
+});
+
+function animate() {
+  if (!running) return;
+
+  // Move down main road until junction
+  if (progress < 260) {
+    cart.setAttribute("cx", 180);
+    cart.setAttribute("cy", 620 - progress);
+    progress += SPEED;
+  }
+  // At junction zone
+  else if (progress >= 260 && progress < 280) {
+    cart.setAttribute("cx", 180);
+    cart.setAttribute("cy", 360);
+    progress += SPEED;
+  }
+  // After junction
+  else {
+    if (branch === 0) {
+      cart.setAttribute("cx", 180 - (progress - 280));
+      cart.setAttribute("cy", 360);
+    } else {
+      cart.setAttribute("cx", 180 + (progress - 280));
+      cart.setAttribute("cy", 360);
+    }
+
+    progress += SPEED;
+
+    if (progress > 420) running = false;
+  }
+
+  requestAnimationFrame(animate);
 }
 
-svg {
-  width: 100vw;
-  height: 100vh;
-}
-
-.road {
-  fill: none;
-  stroke: white;
-  stroke-width: 12;
-  stroke-linecap: round;
-}
-
-#junction {
-  fill: #2ecc71;
-}
-
-#cart {
-  fill: #f1c40f;
-}
+animate();
