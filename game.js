@@ -1,11 +1,11 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const ROAD_WIDTH = 50;
+const ROAD_WIDTH = 80;
 
 let cart = {
   x: 50,
-  y: 300,
+  y: 310, // adjusted to center inside larger road
   width: 40,
   height: 30,
   speed: 1.5,
@@ -13,8 +13,8 @@ let cart = {
 };
 
 let intersection = {
-  x: 375, // aligned with vertical road
-  y: 275, // aligned with horizontal road
+  x: 360, // centered for 80px road
+  y: 260, // centered for 80px road
   size: ROAD_WIDTH,
   turnUp: false
 };
@@ -33,30 +33,28 @@ function drawGrass() {
 function drawRoad() {
   ctx.fillStyle = "#9c8b6f";
 
-  // Horizontal road
-  ctx.fillRect(0, 275, canvas.width, ROAD_WIDTH);
+  // Horizontal road (centered vertically)
+  ctx.fillRect(0, 260, canvas.width, ROAD_WIDTH);
 
-  // Vertical road
-  ctx.fillRect(375, 0, ROAD_WIDTH, 300);
+  // Vertical road (centered horizontally)
+  ctx.fillRect(360, 0, ROAD_WIDTH, 340);
 
-  // Intersection tile (same size as roads)
+  // Intersection tile
   ctx.fillStyle = "#3c9a3c";
   ctx.fillRect(intersection.x, intersection.y, ROAD_WIDTH, ROAD_WIDTH);
 
   // Path indicator
   ctx.strokeStyle = "white";
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 5;
   ctx.beginPath();
 
   if (intersection.turnUp) {
-    // 90° indicator
-    ctx.moveTo(intersection.x + 5, intersection.y + ROAD_WIDTH / 2);
+    ctx.moveTo(intersection.x + 10, intersection.y + ROAD_WIDTH / 2);
     ctx.lineTo(intersection.x + ROAD_WIDTH / 2, intersection.y + ROAD_WIDTH / 2);
-    ctx.lineTo(intersection.x + ROAD_WIDTH / 2, intersection.y + 5);
+    ctx.lineTo(intersection.x + ROAD_WIDTH / 2, intersection.y + 10);
   } else {
-    // Straight indicator
-    ctx.moveTo(intersection.x + 5, intersection.y + ROAD_WIDTH / 2);
-    ctx.lineTo(intersection.x + ROAD_WIDTH - 5, intersection.y + ROAD_WIDTH / 2);
+    ctx.moveTo(intersection.x + 10, intersection.y + ROAD_WIDTH / 2);
+    ctx.lineTo(intersection.x + ROAD_WIDTH - 10, intersection.y + ROAD_WIDTH / 2);
   }
 
   ctx.stroke();
@@ -64,12 +62,12 @@ function drawRoad() {
 
 function drawHouse() {
   ctx.fillStyle = "#8b5a2b";
-  ctx.fillRect(350, 50, 100, 70);
+  ctx.fillRect(340, 50, 120, 80);
 }
 
 function drawDeadEnd() {
   ctx.fillStyle = "#7a3b2e";
-  ctx.fillRect(700, 275, 80, ROAD_WIDTH);
+  ctx.fillRect(720, 260, 80, ROAD_WIDTH);
 }
 
 function drawCart() {
@@ -99,11 +97,10 @@ function updateCart() {
     }
   }
 
-  // Apply movement
   if (cart.direction === "right") {
     cart.x += cart.speed;
 
-    if (cart.x > 700) {
+    if (cart.x > 720) {
       endGame("lose");
     }
   }
@@ -111,7 +108,7 @@ function updateCart() {
   if (cart.direction === "up") {
     cart.y -= cart.speed;
 
-    if (cart.y <= 120) {
+    if (cart.y <= 130) {
       endGame("win");
     }
   }
@@ -130,7 +127,7 @@ function endGame(result) {
 
 function restartGame() {
   cart.x = 50;
-  cart.y = 300;
+  cart.y = 310;
   cart.direction = "right";
   intersection.turnUp = false;
   gameState = "playing";
