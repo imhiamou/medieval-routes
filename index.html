@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medieval Rail Switch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<svg viewBox="0 0 360 640">
+
+  <!-- Main vertical road -->
+  <path id="mainRoad"
+        d="M180 620 L180 360 L180 200"
+        class="road" />
+
+  <!-- Left branch -->
+  <path id="leftBranch"
+        d="M180 360 L100 260"
+        class="road" />
+
+  <!-- Right branch -->
+  <path id="rightBranch"
+        d="M180 360 L260 260"
+        class="road" />
+
+  <!-- Junction -->
+  <circle id="junction"
+          cx="180"
+          cy="360"
+          r="28" />
+
+  <!-- Cart -->
+  <g id="cart">
+    <rect x="-10" y="-6" width="20" height="12" rx="3" />
+    <circle cx="-6" cy="8" r="4" />
+    <circle cx="6" cy="8" r="4" />
+  </g>
+
+</svg>
+
+<script src="game.js"></script>
+</body>
+</html>
