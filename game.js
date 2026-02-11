@@ -9,8 +9,7 @@ let cart = {
   width: 40,
   height: 30,
   speed: 1.5,
-  direction: "right",
-  locked: false
+  direction: "right"
 };
 
 let intersection = {
@@ -30,29 +29,28 @@ function drawGrass() {
 function drawRoad() {
   ctx.fillStyle = "#9c8b6f";
 
-  // horizontal road (always visible)
+  // Horizontal road (always visible)
   ctx.fillRect(0, 275, canvas.width, 50);
 
-  // vertical road (always visible now)
+  // Vertical road (always visible)
   ctx.fillRect(375, 0, 50, 300);
 
-  // intersection tile (GREEN now)
+  // Intersection tile (green)
   ctx.fillStyle = "#3c9a3c";
   ctx.fillRect(intersection.x, intersection.y, TILE, TILE);
 
-  // draw path indicator inside intersection
-  ctx.strokeStyle = "#ffffff";
+  // Draw path indicator inside intersection
+  ctx.strokeStyle = "white";
   ctx.lineWidth = 6;
-
   ctx.beginPath();
 
   if (intersection.turnUp) {
-    // draw corner indicator
+    // 90° turn indicator
     ctx.moveTo(intersection.x + 10, intersection.y + 50);
     ctx.lineTo(intersection.x + 50, intersection.y + 50);
     ctx.lineTo(intersection.x + 50, intersection.y + 10);
   } else {
-    // draw straight indicator
+    // straight indicator
     ctx.moveTo(intersection.x + 10, intersection.y + 50);
     ctx.lineTo(intersection.x + 90, intersection.y + 50);
   }
@@ -78,21 +76,17 @@ function drawCart() {
 function updateCart() {
   if (gameState !== "playing") return;
 
-  // Check if cart inside intersection
   const insideIntersection =
     cart.x + cart.width > intersection.x &&
     cart.x < intersection.x + intersection.size &&
     cart.y + cart.height > intersection.y &&
     cart.y < intersection.y + intersection.size;
 
-  if (!insideIntersection) {
-    cart.locked = true;
-  }
-
   if (cart.direction === "right") {
     cart.x += cart.speed;
 
-    if (insideIntersection && intersection.turnUp && !cart.locked) {
+    // If inside and turn active → change direction
+    if (insideIntersection && intersection.turnUp) {
       cart.direction = "up";
     }
 
@@ -121,7 +115,6 @@ function restartGame() {
   cart.x = 50;
   cart.y = 300;
   cart.direction = "right";
-  cart.locked = false;
   intersection.turnUp = false;
   gameState = "playing";
   document.getElementById("ui").classList.add("hidden");
@@ -146,7 +139,7 @@ canvas.addEventListener("click", (e) => {
     cart.y + cart.height > intersection.y &&
     cart.y < intersection.y + intersection.size;
 
-  if (clickedIntersection && cartInside && !cart.locked) {
+  if (clickedIntersection && cartInside) {
     intersection.turnUp = !intersection.turnUp;
   }
 });
