@@ -1,7 +1,7 @@
 body {
   margin: 0;
   background: #2f5d3a;
-  overflow: hidden;
+  font-family: sans-serif;
 }
 
 svg {
@@ -22,7 +22,28 @@ svg {
   stroke-width: 4;
 }
 
-#cart rect,
-#cart circle {
+#cart {
   fill: #c2a15a;
+}
+
+#overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: white;
+  font-size: 22px;
+}
+
+.hidden {
+  display: none;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
 }
