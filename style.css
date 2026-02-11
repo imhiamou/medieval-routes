@@ -1,7 +1,6 @@
 body {
   margin: 0;
-  background: #2f5d3a;
-  font-family: sans-serif;
+  background: #222;
 }
 
 svg {
@@ -11,42 +10,15 @@ svg {
 
 .road {
   fill: none;
-  stroke: #1f3d2b;
-  stroke-width: 14;
+  stroke: white;
+  stroke-width: 12;
   stroke-linecap: round;
-  opacity: 0.3;
-}
-
-.road.active {
-  opacity: 1;
 }
 
 #junction {
-  fill: #3fa34d;
-  stroke: #1f3d2b;
-  stroke-width: 4;
+  fill: #2ecc71;
 }
 
-#cart rect,
-#cart circle {
-  fill: #c2a15a;
-}
-
-#overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-
-.hidden {
-  display: none;
-}
-
-button {
-  padding: 10px 20px;
-  margin-top: 20px;
+#cart {
+  fill: #f1c40f;
 }
