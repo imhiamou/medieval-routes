@@ -1,7 +1,7 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const TILE = 100;
+const ROAD_WIDTH = 50;
 
 let cart = {
   x: 50,
@@ -13,9 +13,9 @@ let cart = {
 };
 
 let intersection = {
-  x: 350,
-  y: 250,
-  size: TILE,
+  x: 375, // aligned with vertical road
+  y: 275, // aligned with horizontal road
+  size: ROAD_WIDTH,
   turnUp: false
 };
 
@@ -34,29 +34,29 @@ function drawRoad() {
   ctx.fillStyle = "#9c8b6f";
 
   // Horizontal road
-  ctx.fillRect(0, 275, canvas.width, 50);
+  ctx.fillRect(0, 275, canvas.width, ROAD_WIDTH);
 
-  // Vertical road (always visible)
-  ctx.fillRect(375, 0, 50, 300);
+  // Vertical road
+  ctx.fillRect(375, 0, ROAD_WIDTH, 300);
 
-  // Intersection tile (green)
+  // Intersection tile (same size as roads)
   ctx.fillStyle = "#3c9a3c";
-  ctx.fillRect(intersection.x, intersection.y, TILE, TILE);
+  ctx.fillRect(intersection.x, intersection.y, ROAD_WIDTH, ROAD_WIDTH);
 
   // Path indicator
   ctx.strokeStyle = "white";
-  ctx.lineWidth = 6;
+  ctx.lineWidth = 4;
   ctx.beginPath();
 
   if (intersection.turnUp) {
     // 90° indicator
-    ctx.moveTo(intersection.x + 10, intersection.y + 50);
-    ctx.lineTo(intersection.x + 50, intersection.y + 50);
-    ctx.lineTo(intersection.x + 50, intersection.y + 10);
+    ctx.moveTo(intersection.x + 5, intersection.y + ROAD_WIDTH / 2);
+    ctx.lineTo(intersection.x + ROAD_WIDTH / 2, intersection.y + ROAD_WIDTH / 2);
+    ctx.lineTo(intersection.x + ROAD_WIDTH / 2, intersection.y + 5);
   } else {
     // Straight indicator
-    ctx.moveTo(intersection.x + 10, intersection.y + 50);
-    ctx.lineTo(intersection.x + 90, intersection.y + 50);
+    ctx.moveTo(intersection.x + 5, intersection.y + ROAD_WIDTH / 2);
+    ctx.lineTo(intersection.x + ROAD_WIDTH - 5, intersection.y + ROAD_WIDTH / 2);
   }
 
   ctx.stroke();
@@ -69,7 +69,7 @@ function drawHouse() {
 
 function drawDeadEnd() {
   ctx.fillStyle = "#7a3b2e";
-  ctx.fillRect(700, 275, 80, 50);
+  ctx.fillRect(700, 275, 80, ROAD_WIDTH);
 }
 
 function drawCart() {
@@ -90,8 +90,7 @@ function updateCart() {
     cart.y + cart.height > intersection.y &&
     cart.y < intersection.y + intersection.size;
 
-  // 🔁 While inside intersection,
-  // continuously follow the intersection state
+  // While inside → continuously follow intersection state
   if (insideIntersection) {
     if (intersection.turnUp) {
       cart.direction = "up";
@@ -151,9 +150,9 @@ canvas.addEventListener("click", (e) => {
 
   const clickedIntersection =
     mouseX >= intersection.x &&
-    mouseX <= intersection.x + TILE &&
+    mouseX <= intersection.x + ROAD_WIDTH &&
     mouseY >= intersection.y &&
-    mouseY <= intersection.y + TILE;
+    mouseY <= intersection.y + ROAD_WIDTH;
 
   if (clickedIntersection) {
     intersection.turnUp = !intersection.turnUp;
