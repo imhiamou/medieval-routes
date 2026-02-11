@@ -1,34 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rail Switch Game</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Medieval Cart Puzzle</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<div id="game">
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
 
-<svg viewBox="0 0 360 640">
+  <div id="ui" class="hidden">
+    <h1 id="resultText"></h1>
+    <button onclick="restartGame()">Restart</button>
+  </div>
 
-  <path d="M180 620 L180 360" class="road" />
-  <path d="M180 360 L100 260" class="road" />
-  <path d="M180 360 L260 260" class="road" />
-
-  <circle id="junction" cx="180" cy="360" r="28" />
-
-  <circle id="cart" cx="180" cy="620" r="8" />
-
-</svg>
-
-<div id="overlay" class="hidden">
-  <div id="message"></div>
-  <button onclick="restart()">Restart</button>
-</div>
-
-</div>
-
-<script src="game.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
