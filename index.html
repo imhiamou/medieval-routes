@@ -1,34 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Medieval Routes</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Game Train</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="game">
-  <svg id="map" viewBox="0 0 360 640" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 360 640">
 
-    <!-- Roads -->
-    <path id="roadA" class="road active" d="M180 600 L180 360 L100 260" />
-    <path id="roadB" class="road" d="M180 600 L180 360 L260 260" />
+    <!-- Straight Path -->
+    <path id="roadStraight"
+          class="road active"
+          d="M180 620 L180 360 L180 200" />
+
+    <!-- Angled Path -->
+    <path id="roadAngle"
+          class="road"
+          d="M180 620 L180 360 L80 200" />
 
     <!-- Junction -->
-    <circle id="junction" cx="180" cy="360" r="22" />
+    <circle id="junction"
+            cx="180"
+            cy="360"
+            r="24" />
 
     <!-- Cart -->
     <g id="cart">
       <rect x="-12" y="-8" width="24" height="16" rx="3" />
       <circle cx="-8" cy="10" r="4" />
       <circle cx="8" cy="10" r="4" />
-    </g>
-
-    <!-- Barn -->
-    <g id="barn" transform="translate(80 220)">
-      <rect width="40" height="30" />
-      <polygon points="0,0 20,-18 40,0" />
     </g>
 
   </svg>
