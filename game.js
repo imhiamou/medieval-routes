@@ -1,97 +1,43 @@
-// ================================
-// Medieval Routes â€“ FULL game.js (FREE SWITCH MODE)
-// Design choice:
-// - Junction can be switched AT ANY TIME
-// - Cart always follows CURRENTLY selected path
-// - No locking, no decision window
-// - Pure real-time routing (intentional design)
-// ================================
+const cart = document.getElementById("cart"); const junction = document.getElementById("junction"); const roadStraight = document.getElementById("roadA"); const roadAngle = document.getElementById("roadB"); const overlay = document.getElementById("overlay"); const message = document.getElementById("message");
 
-const cart = document.getElementById("cart");
-const junction = document.getElementById("junction");
-const roadA = document.getElementById("roadA");
-const roadB = document.getElementById("roadB");
-const overlay = document.getElementById("overlay");
-const message = document.getElementById("message");
+let running = true; let railState = 0;
 
-// ---------- GAME STATE ----------
-let junctionState = 0;   // 0 = roadA, 1 = roadB
-let running = true;
+const NORMAL_SPEED = 1.8; const SLOW_SPEED = 0.8;
 
-// ---------- SPEED ----------
-const NORMAL_SPEED = 1.8;
-const SLOW_SPEED = 0.8;
+const NODE_Y_MIN = 340; const NODE_Y_MAX = 380;
 
-// Junction Y zone (visual slowdown only)
-const JUNCTION_Y_MIN = 340;
-const JUNCTION_Y_MAX = 380;
-
-// ---------- PATH ----------
 let progress = 0;
 
-// ---------- INPUT ----------
-junction.addEventListener("click", toggleJunction);
-junction.addEventListener("touchstart", toggleJunction, { passive: false });
+junction.addEventListener("click", toggleRail); junction.addEventListener("touchstart", toggleRail, { passive: false });
 
-function toggleJunction(e) {
-  e.preventDefault();
+function toggleRail(e) { e.preventDefault();
 
-  junctionState = 1 - junctionState;
-  roadA.classList.toggle("active", junctionState === 0);
-  roadB.classList.toggle("active", junctionState === 1);
-}
+railState = 1 - railState;
 
-// ---------- HELPERS ----------
-function getActiveRoad() {
-  return junctionState === 0 ? roadA : roadB;
-}
+if (railState === 0) { roadStraight.classList.add("active"); roadAngle.classList.remove("active"); } else { roadStraight.classList.remove("active"); roadAngle.classList.add("active"); } }
 
-function getSpeed(y) {
-  return y > JUNCTION_Y_MIN && y < JUNCTION_Y_MAX
-    ? SLOW_SPEED
-    : NORMAL_SPEED;
-}
+function getActiveRoad() { return railState === 0 ? roadStraight : roadAngle; }
 
-// ---------- MAIN LOOP ----------
-function animate() {
-  if (!running) return;
+function getSpeed(y) { return y > NODE_Y_MIN && y < NODE_Y_MAX ? SLOW_SPEED : NORMAL_SPEED; }
 
-  const activePath = getActiveRoad();
-  const pathLength = activePath.getTotalLength();
+function animate() { if (!running) return;
 
-  // Clamp progress if path length changes
-  if (progress > pathLength) progress = pathLength;
+const activePath = getActiveRoad(); const pathLength = activePath.getTotalLength();
 
-  const point = activePath.getPointAtLength(progress);
+if (progress > pathLength) progress = pathLength;
 
-  cart.setAttribute(
-    "transform",
-    `translate(${point.x}, ${point.y})`
-  );
+const point = activePath.getPointAtLength(progress);
 
-  progress += getSpeed(point.y);
+cart.setAttribute( "transform", translate(${point.x}, ${point.y}) );
 
-  if (progress >= pathLength) {
-    endGame(junctionState === 0);
-    return;
-  }
+progress += getSpeed(point.y);
 
-  requestAnimationFrame(animate);
-}
+if (progress >= pathLength) { endGame(railState === 0); return; }
 
-// ---------- END GAME ----------
-function endGame(success) {
-  running = false;
-  overlay.classList.remove("hidden");
-  message.textContent = success
-    ? "Correct delivery 🍍"
-    : "Wrong path 😞";
-}
+requestAnimationFrame(animate); }
 
-// ---------- RESTART ----------
-function restart() {
-  location.reload();
-}
+function endGame(success) { running = false; overlay.classList.remove("hidden"); message.textContent = success ? "Correct delivery" : "Wrong path"; }
 
-// ---------- START ----------
+function restart() { location.reload(); }
+
 animate();
