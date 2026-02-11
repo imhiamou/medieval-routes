@@ -1,46 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Game Train</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="game">
-  <svg viewBox="0 0 360 640">
+<svg viewBox="0 0 360 640">
 
-    <!-- Straight Path -->
-    <path id="roadStraight"
-          class="road active"
-          d="M180 620 L180 360 L180 200" />
+  <!-- Main vertical road -->
+  <path id="mainRoad"
+        d="M180 620 L180 200"
+        class="road" />
 
-    <!-- Angled Path -->
-    <path id="roadAngle"
-          class="road"
-          d="M180 620 L180 360 L80 200" />
+  <!-- Left branch -->
+  <path id="leftBranch"
+        d="M180 360 L80 360"
+        class="road" />
 
-    <!-- Junction -->
-    <circle id="junction"
-            cx="180"
-            cy="360"
-            r="24" />
+  <!-- Right branch -->
+  <path id="rightBranch"
+        d="M180 360 L280 360"
+        class="road" />
 
-    <!-- Cart -->
-    <g id="cart">
-      <rect x="-12" y="-8" width="24" height="16" rx="3" />
-      <circle cx="-8" cy="10" r="4" />
-      <circle cx="8" cy="10" r="4" />
-    </g>
+  <!-- Junction -->
+  <circle id="junction"
+          cx="180"
+          cy="360"
+          r="28" />
 
-  </svg>
+  <!-- Cart -->
+  <circle id="cart" r="8" />
 
-  <div id="overlay" class="hidden">
-    <div id="message"></div>
-    <button onclick="restart()">Restart</button>
-  </div>
-</div>
+</svg>
 
 <script src="game.js"></script>
 </body>
