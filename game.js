@@ -1,53 +1,77 @@
 const cart = document.getElementById("cart");
 const junction = document.getElementById("junction");
-const mainRoad = document.getElementById("mainRoad");
-const leftBranch = document.getElementById("leftBranch");
-const rightBranch = document.getElementById("rightBranch");
+const overlay = document.getElementById("overlay");
+const message = document.getElementById("message");
 
-let progress = 0;
+let x = 180;
+let y = 620;
+
 let branch = 0;
+let state = "vertical";
 let running = true;
 
 const SPEED = 1.5;
 
-junction.addEventListener("click", toggleBranch);
-junction.addEventListener("touchstart", toggleBranch, { passive: false });
+junction.addEventListener("click", () => {
+  if (state === "node") {
+    branch = 1 - branch;
+  }
+});
 
-function toggleBranch(e) {
+junction.addEventListener("touchstart", (e) => {
   e.preventDefault();
-  branch = 1 - branch;
-}
+  if (state === "node") {
+    branch = 1 - branch;
+  }
+}, { passive: false });
 
 function animate() {
   if (!running) return;
 
-  let x, y;
+  if (state === "vertical") {
+    y -= SPEED;
 
-  if (progress < 260) {
-    x = 180;
-    y = 620 - progress;
-  } else if (progress < 280) {
-    x = 180;
-    y = 360;
-  } else {
-    if (branch === 0) {
-      x = 180 - (progress - 280) * 0.8;
-      y = 360 - (progress - 280);
-    } else {
-      x = 180 + (progress - 280) * 0.8;
-      y = 360 - (progress - 280);
-    }
-
-    if (y < 200) {
-      running = false;
+    if (y <= 360) {
+      y = 360;
+      state = "node";
     }
   }
 
-  cart.setAttribute("transform", `translate(${x}, ${y})`);
+  else if (state === "node") {
+    y -= SPEED;
 
-  progress += SPEED;
+    if (y <= 350) {
+      state = "branch";
+    }
+  }
+
+  else if (state === "branch") {
+
+    if (branch === 0) {
+      x -= SPEED;
+      y -= SPEED;
+    } else {
+      x += SPEED;
+      y -= SPEED;
+    }
+
+    if (y <= 260) {
+      running = false;
+      overlay.classList.remove("hidden");
+      message.textContent = branch === 0
+        ? "Went Left"
+        : "Went Right";
+    }
+  }
+
+  cart.setAttribute("cx", x);
+  cart.setAttribute("cy", y);
 
   requestAnimationFrame(animate);
+}
+
+function restart() {
+  location.reload();
 }
 
 animate();
