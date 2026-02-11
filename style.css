@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  background: #2f5d3a;
+  overflow: hidden;
+}
+
+svg {
+  width: 100vw;
+  height: 100vh;
+}
+
+.road {
+  fill: none;
+  stroke: #1f3d2b;
+  stroke-width: 14;
+  stroke-linecap: round;
+}
+
+#junction {
+  fill: #3fa34d;
+  stroke: #1f3d2b;
+  stroke-width: 4;
+}
+
+#cart rect,
+#cart circle {
+  fill: #c2a15a;
+}
