@@ -9,8 +9,7 @@ let cart = {
   width: 40,
   height: 30,
   speed: 1.5,
-  direction: "right",
-  hasChosenDirection: false
+  direction: "right"
 };
 
 let intersection = {
@@ -21,6 +20,10 @@ let intersection = {
 };
 
 let gameState = "playing";
+
+/* ========================= */
+/* DRAWING                   */
+/* ========================= */
 
 function drawGrass() {
   ctx.fillStyle = "#6bbf59";
@@ -46,7 +49,7 @@ function drawRoad() {
   ctx.beginPath();
 
   if (intersection.turnUp) {
-    // 90° turn indicator
+    // 90° indicator
     ctx.moveTo(intersection.x + 10, intersection.y + 50);
     ctx.lineTo(intersection.x + 50, intersection.y + 50);
     ctx.lineTo(intersection.x + 50, intersection.y + 10);
@@ -74,6 +77,10 @@ function drawCart() {
   ctx.fillRect(cart.x, cart.y, cart.width, cart.height);
 }
 
+/* ========================= */
+/* MOVEMENT LOGIC            */
+/* ========================= */
+
 function updateCart() {
   if (gameState !== "playing") return;
 
@@ -83,16 +90,19 @@ function updateCart() {
     cart.y + cart.height > intersection.y &&
     cart.y < intersection.y + intersection.size;
 
+  // 🔁 While inside intersection,
+  // continuously follow the intersection state
+  if (insideIntersection) {
+    if (intersection.turnUp) {
+      cart.direction = "up";
+    } else {
+      cart.direction = "right";
+    }
+  }
+
+  // Apply movement
   if (cart.direction === "right") {
     cart.x += cart.speed;
-
-    // ONLY decide direction while inside intersection
-    if (insideIntersection && !cart.hasChosenDirection) {
-      if (intersection.turnUp) {
-        cart.direction = "up";
-      }
-      cart.hasChosenDirection = true;
-    }
 
     if (cart.x > 700) {
       endGame("lose");
@@ -108,6 +118,10 @@ function updateCart() {
   }
 }
 
+/* ========================= */
+/* GAME STATE                */
+/* ========================= */
+
 function endGame(result) {
   gameState = result;
   document.getElementById("ui").classList.remove("hidden");
@@ -119,13 +133,15 @@ function restartGame() {
   cart.x = 50;
   cart.y = 300;
   cart.direction = "right";
-  cart.hasChosenDirection = false;
   intersection.turnUp = false;
   gameState = "playing";
   document.getElementById("ui").classList.add("hidden");
 }
 
-// 🔥 CLICK CAN HAPPEN ANYTIME NOW
+/* ========================= */
+/* CLICK HANDLER             */
+/* ========================= */
+
 canvas.addEventListener("click", (e) => {
   if (gameState !== "playing") return;
 
@@ -143,6 +159,10 @@ canvas.addEventListener("click", (e) => {
     intersection.turnUp = !intersection.turnUp;
   }
 });
+
+/* ========================= */
+/* GAME LOOP                 */
+/* ========================= */
 
 function gameLoop() {
   drawGrass();
